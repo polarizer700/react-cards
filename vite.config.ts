@@ -10,7 +10,7 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
-  base: '/react-cards/#/products',
+  base: '/react-cards/',
   build: {
     outDir: 'dist',
     sourcemap: false,
