@@ -10,7 +10,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { fetchProducts as apiFetchProducts } from '@/api/apiClient';
 import { ConfirmDeleteModal } from '@/components/ConfirmDeleteModal';
@@ -21,16 +21,21 @@ import styles from './ProductsPage.module.css';
 const itemsPerPage = 6;
 
 export const ProductsPage = () => {
-  const [filter, setFilter] = useState<'all' | 'liked'>('all');
   const [searchParams, setSearchParams] = useSearchParams();
-  const [currentPage, setCurrentPage] = useState(1);
+
+  const urlFilter = searchParams.get('filter');
+  const filter = (urlFilter === 'liked' || urlFilter === 'all') ? urlFilter : 'all';
+
+  const urlPage = searchParams.get('page');
+  const initialPage = urlPage ? Number.parseInt(urlPage, 10) : 1;
+  const currentPage = Number.isNaN(initialPage) ? 1 : initialPage;
 
   const {
     products,
     getFilteredProducts,
     loading,
     error,
-    searchTerm,
+    searchTerm: storeSearchTerm,
     setSearchTerm,
     setProducts,
     setLoading,
@@ -39,12 +44,6 @@ export const ProductsPage = () => {
   } = useProductStore();
 
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const pageFromUrl = searchParams.get('page');
-    const initialPage = pageFromUrl ? Number.parseInt(pageFromUrl, 10) : 1;
-    setCurrentPage(Number.isNaN(initialPage) ? 1 : initialPage);
-  }, [searchParams]);
 
   useEffect(() => {
     if (products.length > 0) {
@@ -70,20 +69,56 @@ export const ProductsPage = () => {
   }, [products, setProducts, setLoading, setError, navigate]);
 
   const filteredProducts = getFilteredProducts(filter);
-
   const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0 && !loading) {
+      const newParams = new URLSearchParams(searchParams);
+      if (totalPages === 1) {
+        newParams.delete('page');
+      } else {
+        newParams.set('page', '1');
+      }
+      setSearchParams(newParams, { replace: true });
+    }
+  }, [filteredProducts, totalPages, currentPage, searchParams, setSearchParams, loading]);
 
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const productsForCurrentPage = filteredProducts.slice(startIndex, endIndex);
 
   const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
-    setCurrentPage(value);
     if (value === 1) {
-      setSearchParams({});
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('page');
+      setSearchParams(newParams);
     } else {
-      setSearchParams({ page: value.toString() });
+      setSearchParams({ ...Object.fromEntries(searchParams.entries()), page: value.toString() });
     }
+  };
+
+  const handleFilterChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newFilter = event.target.value as 'all' | 'liked';
+    const newSearchParams = new URLSearchParams();
+    newSearchParams.set('filter', newFilter);
+    if (storeSearchTerm) {
+      newSearchParams.set('searchTerm', storeSearchTerm);
+    }
+    setSearchParams(newSearchParams);
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newSearchTerm = e.target.value;
+    setSearchTerm(newSearchTerm);
+    const newSearchParams = new URLSearchParams();
+    if (newSearchTerm) {
+      newSearchParams.set('searchTerm', newSearchTerm);
+    }
+    if (filter) {
+      newSearchParams.set('filter', filter);
+    }
+    newSearchParams.delete('page');
+    setSearchParams(newSearchParams);
   };
 
   if (loading)
@@ -112,8 +147,8 @@ export const ProductsPage = () => {
             fullWidth
             label="Поиск..."
             variant="outlined"
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
+            value={storeSearchTerm}
+            onChange={handleSearchChange}
             margin="normal"
             sx={{ mb: 2 }}
           />
@@ -121,7 +156,7 @@ export const ProductsPage = () => {
           <RadioGroup
             row
             value={filter}
-            onChange={e => setFilter(e.target.value as 'all' | 'liked')}
+            onChange={handleFilterChange}
             aria-label="filter"
           >
             <FormControlLabel value="all" control={<Radio />} label="Все" />
@@ -129,8 +164,7 @@ export const ProductsPage = () => {
           </RadioGroup>
         </Paper>
 
-        {productsForCurrentPage
-          && productsForCurrentPage.length === 0
+        {productsForCurrentPage.length === 0
           ? (
               <Typography variant="h6" color="text.secondary" sx={{ mt: 4 }}>
                 Нет продуктов для отображения
