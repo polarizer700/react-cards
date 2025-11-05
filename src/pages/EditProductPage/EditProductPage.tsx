@@ -50,7 +50,7 @@ export const EditProductPage = () => {
       price: productToEdit?.price || 0,
       description: productToEdit?.description || '',
       category: productToEdit?.category || '',
-      image: productToEdit?.image || 'https://fakestoreapi.com/img/81fPKd-2AYL._AC_SL1500_.jpg',
+      image: productToEdit?.image || 'https://img.freepik.com/free-photo/open-sign-hanging-doorknob_23-2149169012.jpg',
     },
   });
 

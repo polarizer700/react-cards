@@ -3,6 +3,7 @@ import {
   Button,
   Container,
   FormControlLabel,
+  Pagination,
   Paper,
   Radio,
   RadioGroup,
@@ -10,15 +11,20 @@ import {
   Typography,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { fetchProducts as apiFetchProducts } from '@/api/apiClient';
 import { ConfirmDeleteModal } from '@/components/ConfirmDeleteModal';
 import { ProductCard } from '@/components/ProductCard/ProductCard';
 import { useProductStore } from '@/store/useProductStore';
 import styles from './ProductsPage.module.css';
 
+const itemsPerPage = 6;
+
 export const ProductsPage = () => {
   const [filter, setFilter] = useState<'all' | 'liked'>('all');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [currentPage, setCurrentPage] = useState(1);
+
   const {
     products,
     getFilteredProducts,
@@ -33,6 +39,12 @@ export const ProductsPage = () => {
   } = useProductStore();
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const pageFromUrl = searchParams.get('page');
+    const initialPage = pageFromUrl ? Number.parseInt(pageFromUrl, 10) : 1;
+    setCurrentPage(Number.isNaN(initialPage) ? 1 : initialPage);
+  }, [searchParams]);
 
   useEffect(() => {
     if (products.length > 0) {
@@ -58,6 +70,21 @@ export const ProductsPage = () => {
   }, [products, setProducts, setLoading, setError, navigate]);
 
   const filteredProducts = getFilteredProducts(filter);
+
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const productsForCurrentPage = filteredProducts.slice(startIndex, endIndex);
+
+  const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
+    setCurrentPage(value);
+    if (value === 1) {
+      setSearchParams({});
+    } else {
+      setSearchParams({ page: value.toString() });
+    }
+  };
 
   if (loading)
     return <Typography sx={{ mt: 4 }}>Загрузка...</Typography>;
@@ -102,7 +129,8 @@ export const ProductsPage = () => {
           </RadioGroup>
         </Paper>
 
-        {filteredProducts.length === 0
+        {productsForCurrentPage
+          && productsForCurrentPage.length === 0
           ? (
               <Typography variant="h6" color="text.secondary" sx={{ mt: 4 }}>
                 Нет продуктов для отображения
@@ -110,7 +138,7 @@ export const ProductsPage = () => {
             )
           : (
               <Box className={styles.productList}>
-                {filteredProducts.map(product => (
+                {productsForCurrentPage.map(product => (
                   <ProductCard
                     key={product.id}
                     product={product}
@@ -119,6 +147,19 @@ export const ProductsPage = () => {
                 ))}
               </Box>
             )}
+
+        {totalPages > 1 && (
+          <Box display="flex" justifyContent="center" sx={{ mt: 4 }}>
+            <Pagination
+              count={totalPages}
+              page={currentPage}
+              onChange={handlePageChange}
+              color="primary"
+              showFirstButton
+              showLastButton
+            />
+          </Box>
+        )}
       </Container>
 
       <ConfirmDeleteModal />

@@ -43,7 +43,7 @@ export const CreateProductPage = () => {
       price: 0,
       description: '',
       category: '',
-      image: 'https://fakestoreapi.com/img/81fPKd-2AYL._AC_SL1500_.jpg',
+      image: 'https://img.freepik.com/free-photo/open-sign-hanging-doorknob_23-2149169012.jpg',
     },
   });
 

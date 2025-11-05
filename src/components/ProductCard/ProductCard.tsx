@@ -3,6 +3,7 @@ import { Box, Card, CardActions, CardContent, CardMedia, Typography } from '@mui
 import { Link } from 'react-router-dom';
 import { DeleteButton } from '@/components/DeleteButton';
 import { LikeButton } from '@/components/LikeButton';
+import styles from './ProductCard.module.css';
 
 interface ProductCardProps {
   product: Product;
@@ -10,14 +11,6 @@ interface ProductCardProps {
 }
 
 export const ProductCard = ({ product, onToggleLike }: ProductCardProps) => {
-  const truncatedTitle = product.title.length > 20
-    ? `${product.title.slice(0, 20)}...`
-    : product.title;
-
-  const truncatedDescription = product.description.length > 50
-    ? `${product.description.slice(0, 50)}...`
-    : product.description;
-
   const handleLikeClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     onToggleLike(product.id);
@@ -36,12 +29,12 @@ export const ProductCard = ({ product, onToggleLike }: ProductCardProps) => {
         </Box>
         <CardContent sx={{ flexGrow: 1, pb: 1, minHeight: 80 }}>
           <Typography gutterBottom variant="h6" component="div" noWrap>
-            {truncatedTitle}
+            {product.title}
           </Typography>
-          <Typography variant="body2" color="text.secondary" noWrap>
-            {truncatedDescription}
+          <Typography className={styles.clamp2} variant="body2" color="text.secondary">
+            {product.description}
           </Typography>
-          <Typography variant="body2" color="text.secondary" noWrap>
+          <Typography sx={{ mb: 1 }} variant="body2" color="text.secondary" noWrap>
             Категория:
             {' '}
             {product.category}
