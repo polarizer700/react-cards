@@ -1,19 +1,16 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
-// src/components/ConfirmDeleteModal.tsx
-import { useShallow } from 'zustand/react/shallow'; // <-- Убедись, что импортировал useShallow
+import { useShallow } from 'zustand/react/shallow';
 import { useModalStore } from '@/store/useModalStore';
 import { useProductStore } from '@/store/useProductStore';
 
 export const ConfirmDeleteModal = () => {
-  // Используем useShallow
   const { isOpen, data, closeModal } = useModalStore(
     useShallow(state => ({
       isOpen: state.isOpen && state.modalType === 'confirmDelete',
       data: state.data,
-      closeModal: state.closeModal, // <-- closeModal объявлен ТОЛЬКО здесь
+      closeModal: state.closeModal,
     })),
   );
-    // closeModal НЕ должен объявляться снова отдельно, если он уже в объекте выше
   const deleteProduct = useProductStore(s => s.deleteProduct);
 
   const productId = data?.id;
@@ -23,11 +20,11 @@ export const ConfirmDeleteModal = () => {
     if (productId !== undefined) {
       deleteProduct(productId);
     }
-    closeModal(); // Используем closeModal из селектора
+    closeModal();
   };
 
   const handleCancel = () => {
-    closeModal(); // Используем closeModal из селектора
+    closeModal();
   };
 
   if (!isOpen) {

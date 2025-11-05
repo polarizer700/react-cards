@@ -1,6 +1,7 @@
 import { createTheme, CssBaseline, ThemeProvider } from '@mui/material';
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import { Layout } from '@/components/Layout';
+import { EditProductPage } from '@/pages/EditProductPage';
 import { NotFoundPage } from '@/pages/NotFoundPage/NotFoundPage.tsx';
 import { CreateProductPage } from './pages/CreateProductPage';
 import { ProductDetailPage } from './pages/ProductDetailPage';
@@ -18,6 +19,7 @@ export const App = () => {
             <Route path="/" element={<ProductsPage />} />
             <Route path="/products" element={<ProductsPage />} />
             <Route path="/products/:id" element={<ProductDetailPage />} />
+            <Route path="/products/:id/edit" element={<EditProductPage />} />
             <Route path="/create-product" element={<CreateProductPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>

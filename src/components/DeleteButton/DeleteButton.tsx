@@ -1,16 +1,15 @@
 import { Delete } from '@mui/icons-material';
 import { IconButton } from '@mui/material';
-// src/components/DeleteButton.tsx
 import React from 'react';
-import { useModalStore } from '@/store/useModalStore'; // Импортируем новый store
+import { useModalStore } from '@/store/useModalStore';
 
 interface DeleteButtonProps {
   disabled?: boolean;
-  productId: number; // Передаём id продукта
+  productId: number;
 }
 
 export const DeleteButton = ({ disabled = false, productId }: DeleteButtonProps) => {
-  const openModal = useModalStore(s => s.openModal); // Получаем экшн открытия модалки
+  const openModal = useModalStore(s => s.openModal);
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -20,7 +19,7 @@ export const DeleteButton = ({ disabled = false, productId }: DeleteButtonProps)
   return (
     <IconButton
       aria-label="Delete"
-      onClick={handleClick} // Вызываем функцию открытия модалки
+      onClick={handleClick}
       color="error"
       disabled={disabled}
       size="small"

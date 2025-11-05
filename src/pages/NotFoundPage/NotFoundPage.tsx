@@ -27,7 +27,7 @@ export const NotFoundPage = () => {
           type="button"
           fullWidth
           variant="contained"
-          onClick={() => navigate(-1)} // Возврат назад
+          onClick={() => navigate(-1)}
           sx={{ mt: 1, mb: 1 }}
         >
           Назад
@@ -36,7 +36,7 @@ export const NotFoundPage = () => {
           type="button"
           fullWidth
           variant="outlined"
-          onClick={() => navigate('/')} // Переход на главную
+          onClick={() => navigate('/')}
           sx={{ mt: 1, mb: 1 }}
         >
           На главную

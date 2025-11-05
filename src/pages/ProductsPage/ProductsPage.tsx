@@ -1,4 +1,3 @@
-// src/pages/ProductsPage.tsx
 import {
   Box,
   Button,

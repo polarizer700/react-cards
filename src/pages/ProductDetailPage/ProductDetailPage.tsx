@@ -1,19 +1,17 @@
 import type { Product } from '@/types';
-import { ArrowBack } from '@mui/icons-material'; // Импортируем иконку стрелки
+import { ArrowBack, Edit } from '@mui/icons-material';
 import { Avatar, Box, Button, Container, Paper, Typography } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useProductStore } from '@/store/useProductStore';
+import styles from './ProductDetailPage.module.css';
 
 export const ProductDetailPage = () => {
-  const { id } = useParams<{ id: string }>(); // Получаем id из URL
-  const navigate = useNavigate(); // Для навигации
-  const products = useProductStore(s => s.products); // Получаем все продукты из store
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const products = useProductStore(s => s.products);
 
-  // Найдём продукт по id
-  // useParams возвращает строку, нам нужен number
   const product = products.find(p => p.id === Number(id)) as Product | undefined;
 
-  // Если продукт не найден, можно перенаправить на 404 или отобразить сообщение
   if (!product) {
     return (
       <Container maxWidth="sm" sx={{ mt: 4, mb: 4 }}>
@@ -24,7 +22,7 @@ export const ProductDetailPage = () => {
           <Button
             variant="outlined"
             startIcon={<ArrowBack />}
-            onClick={() => navigate('/products')} // Возврат к списку
+            onClick={() => navigate('/products')}
             sx={{ mt: 2 }}
           >
             Назад к списку
@@ -37,16 +35,22 @@ export const ProductDetailPage = () => {
   return (
     <Container maxWidth="sm" sx={{ mt: 4, mb: 4 }}>
       <Paper sx={{ p: 3 }}>
-        {/* Кнопка "назад" */}
-        <Button
-          variant="outlined"
-          startIcon={<ArrowBack />}
-          onClick={() => navigate(-1)} // Возврат назад в истории браузера
-          sx={{ mb: 2 }}
-        >
-          Назад
-        </Button>
-
+        <Box className={styles.btnWrapper}>
+          <Button
+            variant="outlined"
+            startIcon={<ArrowBack />}
+            onClick={() => navigate(-1)}
+          >
+            Назад
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<Edit />}
+            onClick={() => navigate(`/products/${id}/edit`)}
+          >
+            Редактировать
+          </Button>
+        </Box>
         {/* Детали продукта */}
         <Box display="flex" alignItems="center" mb={2}>
           <Avatar

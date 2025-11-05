@@ -1,6 +1,6 @@
 import type { ProductFormData } from '@/api/model/createProduct.ts';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ArrowBack } from '@mui/icons-material';
+import { ArrowBack, Save } from '@mui/icons-material';
 import {
   Alert,
   Box,
@@ -15,50 +15,92 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
-import { useShallow } from 'zustand/react/shallow';
+import { useNavigate, useParams } from 'react-router-dom';
 import { productSchema } from '@/api/model/createProduct.ts';
 import { useProductStore } from '@/store/useProductStore';
 
-export const CreateProductPage = () => {
+export const EditProductPage = () => {
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const { loading, error } = useProductStore(
-    useShallow(s => ({
-      loading: s.loading,
-      error: s.error,
-    })),
-  );
-  const storeCreateProduct = useProductStore(s => s.createProduct);
+  const products = useProductStore(s => s.products);
+  const storeUpdateProduct = useProductStore(s => s.updateProduct);
+  const loading = useProductStore(s => s.loading);
+  const error = useProductStore(s => s.error);
+
+  const productToEdit = products.find(p => p.id === Number(id));
+
+  useEffect(() => {
+    if (!productToEdit && !loading) {
+      console.error(`Продукт с id ${id} не найден в store.`);
+    }
+  }, [productToEdit, id, loading, navigate]);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
+    reset,
   } = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
     defaultValues: {
-      title: '',
-      price: 0,
-      description: '',
-      category: '',
-      image: 'https://fakestoreapi.com/img/81fPKd-2AYL._AC_SL1500_.jpg',
+      title: productToEdit?.title || '',
+      price: productToEdit?.price || 0,
+      description: productToEdit?.description || '',
+      category: productToEdit?.category || '',
+      image: productToEdit?.image || 'https://fakestoreapi.com/img/81fPKd-2AYL._AC_SL1500_.jpg',
     },
   });
 
+  useEffect(() => {
+    if (productToEdit) {
+      reset({
+        title: productToEdit.title,
+        price: productToEdit.price,
+        description: productToEdit.description,
+        category: productToEdit.category,
+        image: productToEdit.image,
+      });
+    }
+  }, [productToEdit, reset]);
+
   const onSubmit = async (data: ProductFormData) => {
+    if (!productToEdit)
+      return;
     try {
-      await storeCreateProduct(data);
-      navigate('/products');
+      await storeUpdateProduct(productToEdit.id, data);
+      navigate(`/products/${productToEdit.id}`);
     } catch (err) {
       console.error('Ошибка в onSubmit:', err);
     }
   };
 
+  if (!productToEdit && !loading) {
+    return (
+      <Container maxWidth="sm" sx={{ mt: 4, mb: 4 }}>
+        <Paper sx={{ p: 3, textAlign: 'center' }}>
+          <Typography variant="h6" color="error">
+            Продукт не найден
+          </Typography>
+          <Button
+            variant="outlined"
+            startIcon={<ArrowBack />}
+            onClick={() => navigate('/products')}
+            sx={{ mt: 2 }}
+          >
+            Назад к списку
+          </Button>
+        </Paper>
+      </Container>
+    );
+  }
+
   return (
     <Container maxWidth="sm" sx={{ mt: 4, mb: 4 }}>
       <Paper sx={{ p: 3 }}>
+
         <Button
           variant="outlined"
           startIcon={<ArrowBack />}
@@ -69,10 +111,9 @@ export const CreateProductPage = () => {
         </Button>
 
         <Typography variant="h5" gutterBottom>
-          Создать продукт
+          Редактировать продукт
         </Typography>
 
-        {/* Отображаем ошибку из store */}
         {error && (
           <Alert severity="error" sx={{ mb: 2 }}>
             {error}
@@ -144,10 +185,11 @@ export const CreateProductPage = () => {
             type="submit"
             fullWidth
             variant="contained"
+            startIcon={<Save />}
             sx={{ mt: 3, mb: 2 }}
             disabled={loading}
           >
-            {loading ? 'Создание...' : 'Создать'}
+            {loading ? 'Сохранение...' : 'Сохранить'}
           </Button>
         </Box>
       </Paper>

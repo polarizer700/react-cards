@@ -1,11 +1,11 @@
 import { create } from 'zustand';
 
-type ModalType = 'confirmDelete'; // Можно расширить для других типов модалок
+type ModalType = 'confirmDelete';
 
 interface ModalState {
   modalType: ModalType | null;
   isOpen: boolean;
-  data: any; // Объект с данными, необходимыми для модального окна (например, id продукта)
+  data: any;
   openModal: (type: ModalType, data?: any) => void;
   closeModal: () => void;
 }

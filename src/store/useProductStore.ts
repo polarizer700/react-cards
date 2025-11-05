@@ -1,7 +1,6 @@
-// src/store/useProductStore.ts
 import type { Product } from '@/types';
 import { create } from 'zustand';
-import { createProduct as apiCreateProduct } from '@/api/apiClient'; // Импортируем новую функцию
+import { createProduct as apiCreateProduct, updateProduct as apiUpdateProduct } from '@/api/apiClient';
 
 type ProductStore = {
   products: Product[];
@@ -13,7 +12,8 @@ type ProductStore = {
   setError: (error: string | null) => void;
   toggleLike: (id: number) => void;
   deleteProduct: (id: number) => void;
-  createProduct: (productData: Omit<Product, 'id' | 'liked'>) => Promise<void>; // Новый экшн, возвращающий Promise
+  createProduct: (productData: Omit<Product, 'id' | 'liked'>) => Promise<void>;
+  updateProduct: (id: number, productData: Partial<Omit<Product, 'id'>>) => Promise<void>;
   setSearchTerm: (term: string) => void;
   getFilteredProducts: (filter: 'all' | 'liked') => Product[];
 };
@@ -40,20 +40,33 @@ export const useProductStore = create<ProductStore>((set, get) => ({
       products: state.products.filter(p => p.id !== id),
     })),
 
-  // Новый экшн createProduct: вызывает API и обновляет store
   createProduct: async (productData) => {
-    set({ loading: true, error: null }); // Устанавливаем состояние загрузки
+    set({ loading: true, error: null });
     try {
-      const createdProduct = await apiCreateProduct(productData); // Вызываем API функцию
-      // Обновляем store, добавив созданный продукт с liked: false
+      const createdProduct = await apiCreateProduct(productData);
       set(state => ({
         products: [...state.products, { ...createdProduct, liked: false }],
-        loading: false, // Сбрасываем загрузку
+        loading: false,
       }));
     } catch (err) {
-      set({ error: 'Ошибка при создании продукта', loading: false }); // Устанавливаем ошибку
+      set({ error: 'Ошибка при создании продукта', loading: false });
       console.error(err);
-      throw err; // Пробрасываем ошибку, чтобы компонент мог её обработать, если нужно
+      throw err;
+    }
+  },
+
+  updateProduct: async (id, productData) => {
+    set({ loading: true, error: null });
+    try {
+      const updatedProduct = await apiUpdateProduct(id, productData);
+      set(state => ({
+        products: state.products.map(p => p.id === id ? { ...updatedProduct, liked: p.liked } : p),
+        loading: false,
+      }));
+    } catch (err) {
+      set({ error: 'Ошибка при обновлении продукта', loading: false });
+      console.error(err);
+      throw err;
     }
   },
 

@@ -27,3 +27,13 @@ export const createProduct = async (newProductData: Omit<Product, 'id'>): Promis
     throw error;
   }
 };
+
+export const updateProduct = async (id: number, updatedProductData: Partial<Omit<Product, 'id'>>): Promise<Product> => {
+  try {
+    const response: AxiosResponse<Product> = await apiClient.put(`/products/${id}`, updatedProductData);
+    return response.data;
+  } catch (error) {
+    console.error('Ошибка при обновлении продукта:', error);
+    throw error;
+  }
+};
